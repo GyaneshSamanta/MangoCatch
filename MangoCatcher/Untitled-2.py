@@ -3,19 +3,20 @@ import os
 pygame.font.init()
 pygame.mixer.init()
 
-WIDTH, HEIGHT = 900, 1600
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+WIDTH, HEIGHT = 900, 900
+WIN = pygame.display.set_mode((WIDTH, HEIGHT)) #Draw window for game
 pygame.display.set_caption("Tuffy Catches Mangoes")
+
+pygame.mixer.music.load('jazz.mp3')
+pygame.mixer.music.play(-1)
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 
-BORDER = pygame.Rect(WIDTH//2 - 5, 0, 10, HEIGHT)
-
 #BULLET_HIT_SOUND = pygame.mixer.Sound('Assets/Grenade+1.mp3')
-#BULLET_FIRE_SOUND = pygame.mixer.Sound('Assets/Gun+Sile    ncer.mp3')
+#BULLET_FIRE_SOUND = pygame.mixer.Sound('Assets/Gun+Silencer.mp3')
 
 HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
 WINNER_FONT = pygame.font.SysFont('comicsans', 100)
@@ -23,11 +24,12 @@ WINNER_FONT = pygame.font.SysFont('comicsans', 100)
 FPS = 60
 VEL = 5
 BULLET_VEL = 7
-MAX_BULLETS = 3
+MAX_BULLETS = 15
 SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 192, 192
-
+MANGO_WIDTH, MANGO_HEIGHT = 80, 80
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
+
 
 YELLOW_SPACESHIP_IMAGE = pygame.image.load(
     os.path.join('Assets', 'spaceship_yellow.png'))
@@ -39,14 +41,17 @@ RED_SPACESHIP_IMAGE = pygame.image.load(
 RED_SPACESHIP = pygame.transform.rotate(pygame.transform.scale(
     RED_SPACESHIP_IMAGE, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT)), 0)
 
+MANGO_IMAGE = pygame.image.load(
+    os.path.join('Assets', 'mango01.png'))
+MANGO = pygame.transform.scale(
+    MANGO_IMAGE, (MANGO_WIDTH, MANGO_HEIGHT))
+
 SPACE = pygame.transform.scale(pygame.image.load(
     os.path.join('Assets', 'space.png')), (WIDTH, HEIGHT))
 
 
 def draw_window(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health):
     WIN.blit(SPACE, (0, 0))
-    
-
     red_health_text = HEALTH_FONT.render(
         "Health: " + str(red_health), 1, WHITE)
     yellow_health_text = HEALTH_FONT.render(
@@ -58,40 +63,50 @@ def draw_window(red, yellow, red_bullets, yellow_bullets, red_health, yellow_hea
     WIN.blit(RED_SPACESHIP, (red.x, red.y))
 
     for bullet in red_bullets:
-        pygame.draw.rect(WIN, RED, bullet)
+        WIN.blit(MANGO, (bullet.x, bullet.y))
 
     for bullet in yellow_bullets:
-        pygame.draw.rect(WIN, YELLOW, bullet)
+        WIN.blit(MANGO, (bullet.x, bullet.y))
 
     pygame.display.update()
 
 
 def yellow_handle_movement(keys_pressed, yellow):
+    if keys_pressed[pygame.K_LSHIFT] and keys_pressed[pygame.K_a] and yellow.x - VEL > 0: # LEFT DASH
+        yellow.x -= 1.25*VEL
+      
     if keys_pressed[pygame.K_a] and yellow.x - VEL > 0:  # LEFT
         yellow.x -= VEL
+      
+    if keys_pressed[pygame.K_LSHIFT] and keys_pressed[pygame.K_d] and yellow.x + VEL + yellow.width < 900: # RIGHT DASH
+        yellow.x += 1.25*VEL
+       
     if keys_pressed[pygame.K_d] and yellow.x + VEL + yellow.width < 900:  # RIGHT
         yellow.x += VEL
-
-
-
+    if keys_pressed[pygame.K_w] and yellow.y - VEL > 0:  # UP
+        yellow.y -= VEL
+    if keys_pressed[pygame.K_s] and yellow.y + VEL + yellow.height < HEIGHT - 15:  # DOWN
+        yellow.y += VEL
+      
+    
+   
 
 def handle_bullets(yellow_bullets, red_bullets, yellow, red):
     for bullet in yellow_bullets:
-        bullet.x += BULLET_VEL
+        bullet.y += BULLET_VEL
         if red.colliderect(bullet):
             pygame.event.post(pygame.event.Event(RED_HIT))
             yellow_bullets.remove(bullet)
-        elif bullet.x > WIDTH:
+        elif bullet.y > HEIGHT:
             yellow_bullets.remove(bullet)
 
     for bullet in red_bullets:
-        bullet.x -= BULLET_VEL
+        bullet.y -= BULLET_VEL
         if yellow.colliderect(bullet):
             pygame.event.post(pygame.event.Event(YELLOW_HIT))
             red_bullets.remove(bullet)
-        elif bullet.x < 0:
+        elif bullet.y < 0:
             red_bullets.remove(bullet)
-
 
 def draw_winner(text):
     draw_text = WINNER_FONT.render(text, 1, WHITE)
@@ -103,7 +118,7 @@ def draw_winner(text):
 
 def main():
     red = pygame.Rect(700, 300, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
-    yellow = pygame.Rect(50, 308, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
+    yellow = pygame.Rect(50, 708, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
 
     red_bullets = []
     yellow_bullets = []
@@ -123,13 +138,13 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LCTRL and len(yellow_bullets) < MAX_BULLETS:
                     bullet = pygame.Rect(
-                        yellow.x + yellow.width, yellow.y + yellow.height//2 - 2, 10, 5)
+                        yellow.x + yellow.width, yellow.y + yellow.height/2 , 5, 5)
                     yellow_bullets.append(bullet)
                     #BULLET_FIRE_SOUND.play()
 
                 if event.key == pygame.K_RCTRL and len(red_bullets) < MAX_BULLETS:
                     bullet = pygame.Rect(
-                        red.x, red.y + red.height//2 - 2, 10, 5)
+                        red.x, red.y + red.height/2, 5, 5)
                     red_bullets.append(bullet)
                     #BULLET_FIRE_SOUND.play()
 
@@ -154,7 +169,7 @@ def main():
 
         keys_pressed = pygame.key.get_pressed()
         yellow_handle_movement(keys_pressed, yellow)
-        
+       
 
         handle_bullets(yellow_bullets, red_bullets, yellow, red)
 
