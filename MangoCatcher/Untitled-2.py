@@ -30,10 +30,10 @@ YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 
 
-YELLOW_SPACESHIP_IMAGE = pygame.image.load( #Load elephant image
-    os.path.join('Assets', 'spaceship_yellow.png'))
-YELLOW_SPACESHIP = pygame.transform.scale( #Change elephant  size
-    YELLOW_SPACESHIP_IMAGE, (tuffy_Width, tuffy_Height))
+TUFFY_ART = pygame.image.load( #Load elephant image
+    os.path.join('Assets', 'Tuffy01.png'))
+TUFFY = pygame.transform.scale( #Change elephant  size
+    TUFFY_ART, (tuffy_Width, tuffy_Height))
 
 RED_SPACESHIP_IMAGE = pygame.image.load(
     os.path.join('Assets', 'spaceship_red.png'))
@@ -58,7 +58,7 @@ def draw_window(red, yellow, red_bullets, falling_mangos, red_health, score):
     WIN.blit(red_health_text, (WIDTH - red_health_text.get_width() - 10, 10))
     WIN.blit(score_text, (10, 10))
 
-    WIN.blit(YELLOW_SPACESHIP, (yellow.x, yellow.y))
+    WIN.blit(TUFFY, (yellow.x, yellow.y))
     WIN.blit(RED_SPACESHIP, (red.x, red.y))
 
     for bullet in red_bullets:
@@ -93,7 +93,7 @@ def handle_bullets(falling_mangos, red_bullets, yellow, red):
         if yellow.colliderect(bullet): #WE CATCH IT
             pygame.event.post(pygame.event.Event(YELLOW_HIT))
             falling_mangos.remove(bullet)
-        elif bullet.y > 840: #WE DONT CATCH
+        elif bullet.y > 750: #WE DONT CATCH
             falling_mangos.remove(bullet) 
 
     for bullet in red_bullets:
@@ -114,7 +114,7 @@ def draw_winner(text):
 
 def main():
     red = pygame.Rect(700, 300, tuffy_Width, tuffy_Height) #Create a red spaceship
-    yellow = pygame.Rect(50, 708, tuffy_Width, tuffy_Height)
+    yellow = pygame.Rect(354, 708, tuffy_Width, tuffy_Height)
 
     red_bullets = [] #Keep track of our bullets
     falling_mangos = []
@@ -133,7 +133,7 @@ def main():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LCTRL and len(falling_mangos) < MAX_BULLETS:
-                    bullet = pygame.Rect(random.randint(0, 820), 0, 80, 80)
+                    bullet = pygame.Rect(random.randint(0, 820), 0, 80, 40)
                     falling_mangos.append(bullet)
                     #BULLET_FIRE_SOUND.play()
 
