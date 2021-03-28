@@ -64,6 +64,6 @@ Keeping it simple, no big words!
 No beep-bops, only **devs** 💖.
 - [Gyanesh Samanta](https://www.github.com/Gyanesh-Samanta-123)
 - [Christin Bui]()
-- [mango]()
-- [I couldn't read your name]()
+- [Eric Chhour]()
+- [Tyler]()
 
