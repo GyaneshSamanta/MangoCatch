@@ -65,5 +65,5 @@ No beep-bops, only **devs** 💖.
 - [Gyanesh Samanta](https://www.github.com/Gyanesh-Samanta-123)
 - [Christin Bui]()
 - [Eric Chhour]()
-- [Tyler]()
+- [Thong Chau]()
 
