@@ -7,7 +7,7 @@ canvas_height = 400
 
 win = Tk()
 win.title('Egg Catcher Game')
-# win.iconbitmap('C:\Users\mailg\Desktop\egg_catcher_game_python-main\eggcatchergame\egg.ico')
+win.iconbitmap(os.path.join('egg.ico'))
 
 c = Canvas(win, width=canvas_width,  height=canvas_height,
            background='deep sky blue')
