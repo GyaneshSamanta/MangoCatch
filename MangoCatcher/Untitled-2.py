@@ -1,12 +1,13 @@
 import pygame
 import os
 import random
+import time
 
 pygame.font.init()
 pygame.mixer.init()
 
 
-test_list = [15, 30, 45, 60]
+test_list = [250, 500, 750, 1000] #Potential intervals to drop mangos (in milliseconds)
 WIDTH, HEIGHT = 900, 900
 WIN = pygame.display.set_mode((WIDTH, HEIGHT)) #Draw window for game
 pygame.display.set_caption("Tuffy Catches Mangoes") #Title of window
@@ -15,7 +16,7 @@ pygame.display.set_caption("Tuffy Catches Mangoes") #Title of window
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
+Tuffy = (255, 255, 0)
 
 HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
 WINNER_FONT = pygame.font.SysFont('comicsans', 100)
@@ -26,19 +27,13 @@ BULLET_VEL = 7
 MAX_BULLETS = 15
 tuffy_Width, tuffy_Height = 192, 192
 MANGO_WIDTH, MANGO_HEIGHT = 80, 80
-YELLOW_HIT = pygame.USEREVENT + 1
-RED_HIT = pygame.USEREVENT + 2
+catch = pygame.USEREVENT + 1
 
 
 TUFFY_ART = pygame.image.load( #Load elephant image
     os.path.join('Assets', 'Tuffy01.png'))
 TUFFY = pygame.transform.scale( #Change elephant  size
     TUFFY_ART, (tuffy_Width, tuffy_Height))
-
-RED_SPACESHIP_IMAGE = pygame.image.load(
-    os.path.join('Assets', 'spaceship_red.png'))
-RED_SPACESHIP = pygame.transform.rotate(pygame.transform.scale(
-    RED_SPACESHIP_IMAGE, (tuffy_Width, tuffy_Height)), 0)
 
 MANGO_IMAGE = pygame.image.load( #Load the mango
     os.path.join('Assets', 'mango01.png'))
@@ -48,61 +43,45 @@ MANGO = pygame.transform.scale( #Take the loaded mango and scale it
 SPACE = pygame.transform.scale(pygame.image.load( #Background
     os.path.join('Assets', 'space.png')), (WIDTH, HEIGHT))
 
-
-def draw_window(red, yellow, red_bullets, falling_mangos, red_health, score):
+#*********DISPLAY*********#
+def draw_window( Tuffy,  falling_mangos, score):
     WIN.blit(SPACE, (0, 0))
-    red_health_text = HEALTH_FONT.render(
-        "Health: " + str(red_health), 1, WHITE)
+    
     score_text = HEALTH_FONT.render(
         "Health: " + str(score), 1, WHITE)
-    WIN.blit(red_health_text, (WIDTH - red_health_text.get_width() - 10, 10))
+    
     WIN.blit(score_text, (10, 10))
 
-    WIN.blit(TUFFY, (yellow.x, yellow.y))
-    WIN.blit(RED_SPACESHIP, (red.x, red.y))
+    WIN.blit(TUFFY, (Tuffy.x, Tuffy.y))
 
-    for bullet in red_bullets:
-        WIN.blit(MANGO, (bullet.x, bullet.y))
 
     for bullet in falling_mangos:
         WIN.blit(MANGO, (bullet.x, bullet.y))
-
     pygame.display.update()
 
-
-def yellow_handle_movement(keys_pressed, yellow):
-    if keys_pressed[pygame.K_LSHIFT] and keys_pressed[pygame.K_LEFT] and yellow.x - VEL > 0: # LEFT DASH
-        yellow.x -= 1.5*VEL
+#**********MOVEMENT**********#
+def handle_tuffy_movement(keys_pressed, Tuffy):
+    if keys_pressed[pygame.K_LSHIFT] and keys_pressed[pygame.K_LEFT] and Tuffy.x - VEL > 0: # LEFT DASH
+        Tuffy.x -= 1.25*VEL
       
-    if keys_pressed[pygame.K_LEFT] and yellow.x - VEL > 0:  # LEFT
-        yellow.x -= VEL
+    if keys_pressed[pygame.K_LEFT] and Tuffy.x - VEL > 0:  # LEFT
+        Tuffy.x -= VEL
       
-    if keys_pressed[pygame.K_LSHIFT] and keys_pressed[pygame.K_RIGHT] and yellow.x + VEL + yellow.width < 900: # RIGHT DASH
-        yellow.x += 1.5*VEL
+    if keys_pressed[pygame.K_LSHIFT] and keys_pressed[pygame.K_RIGHT] and Tuffy.x + VEL + Tuffy.width < 900: # RIGHT DASH
+        Tuffy.x += 1.25*VEL
        
-    if keys_pressed[pygame.K_RIGHT] and yellow.x + VEL + yellow.width < 900:  # RIGHT
-        yellow.x += VEL
-  
-      
-    
-   
+    if keys_pressed[pygame.K_RIGHT] and Tuffy.x + VEL + Tuffy.width < 900:  # RIGHT
+        Tuffy.x += VEL
 
-def handle_bullets(falling_mangos, red_bullets, yellow, red):
+#*********OBSTACLES*********#
+def handle_mangos(falling_mangos, Tuffy):
     for bullet in falling_mangos:
         bullet.y += BULLET_VEL
-        if yellow.colliderect(bullet): #WE CATCH IT
-            pygame.event.post(pygame.event.Event(YELLOW_HIT))
+        if Tuffy.colliderect(bullet): #WE CATCH IT
+            pygame.event.post(pygame.event.Event(catch))
             falling_mangos.remove(bullet)
         elif bullet.y > 750: #WE DONT CATCH
             falling_mangos.remove(bullet) 
-
-    for bullet in red_bullets:
-        bullet.y += BULLET_VEL
-        if yellow.colliderect(bullet):
-            pygame.event.post(pygame.event.Event(YELLOW_HIT))
-            red_bullets.remove(bullet)
-        elif bullet.y < 0:
-            red_bullets.remove(bullet)
 
 def draw_winner(text):
     draw_text = WINNER_FONT.render(text, 1, WHITE)
@@ -113,60 +92,38 @@ def draw_winner(text):
 
 
 def main():
-    red = pygame.Rect(700, 300, tuffy_Width, tuffy_Height) #Create a red spaceship
-    yellow = pygame.Rect(354, 708, tuffy_Width, tuffy_Height)
-
-    red_bullets = [] #Keep track of our bullets
+    Tuffy = pygame.Rect(354, 708, tuffy_Width, tuffy_Height)
     falling_mangos = []
-
-    red_health = 10 #Keep track of our health
     score = 0
-
     clock = pygame.time.Clock()
-    run = True
-    while run:
-        clock.tick(FPS)
+    time_counter = 0 
+    
+    while True:
+        
+        time_counter = clock.tick()
+        if time_counter > 3000:
+            bullet = pygame.Rect(random.randint(0, 820), 0, 80, 40)
+            falling_mangos.append(bullet)
+            time_counter = 0
         for event in pygame.event.get():
+           
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LCTRL and len(falling_mangos) < MAX_BULLETS:
-                    bullet = pygame.Rect(random.randint(0, 820), 0, 80, 40)
-                    falling_mangos.append(bullet)
-                    #BULLET_FIRE_SOUND.play()
-
-            if event.type == RED_HIT:
-                red_health += 1
-                #BULLET_HIT_SOUND.play()
-
-            if event.type == YELLOW_HIT:
+         
+            if event.type == catch:
                 score += 1
-                #BULLET_HIT_SOUND.play()
-
-        # winner_text = ""
-        # if red_health <= 0:
-        #    winner_text = "Yellow Wins!"
-
-        # if score <= 0:
-        #     winner_text = "Red Wins!"
-
-        # if winner_text != "":
-        #    draw_winner(winner_text)
-        #     break
-
+    
         keys_pressed = pygame.key.get_pressed()
-        yellow_handle_movement(keys_pressed, yellow)
+        handle_tuffy_movement(keys_pressed, Tuffy)
        
 
-        handle_bullets(falling_mangos, red_bullets, yellow, red)
+        handle_mangos(falling_mangos, Tuffy)
 
-        draw_window(red, yellow, red_bullets, falling_mangos,
-                    red_health, score)
+        draw_window(Tuffy, falling_mangos,
+                     score)
 
     main()
-
 
 if __name__ == "__main__":
     main()
