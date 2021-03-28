@@ -14,7 +14,7 @@
 
 ## Track and Problem Statement 🚧
 
-***Games using Python and Oygame***
+***Games using Python and pygame***
 
 ## Background 📖
 
@@ -22,7 +22,7 @@ Are you bored and looking for some retro nintendo like games to spice up your qu
 
 **Give life to your boredom!**
 
-## About GiveMyEmoji 🔧
+## About 🔧
 ### What
 We built a few games on the theme "arcade", "Nostalgia" and ofcourse fun in our minds! Each game has a separate challenge with interesting colours and backgrounds to keep players hooked
 
